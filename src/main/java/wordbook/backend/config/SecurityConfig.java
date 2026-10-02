@@ -1,0 +1,98 @@
+package wordbook.backend.config;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import wordbook.backend.security.filter.JWTFilter;
+import wordbook.backend.security.filter.LoginFilter;
+import wordbook.backend.security.handler.SocialSuccessHandler;
+import wordbook.backend.security.util.JWTUtil;
+
+import java.util.List;
+
+
+@Configuration
+@EnableMethodSecurity
+@EnableWebSecurity
+public class SecurityConfig {
+    private final AuthenticationSuccessHandler loginSuccessHandler;
+    private final JWTUtil jwtUtil;
+    private final SocialSuccessHandler socialSuccessHandler;
+    public SecurityConfig(@Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler,
+                          @Qualifier("SocialSuccessHandler") SocialSuccessHandler socialSuccessHandler,JWTUtil jwtUtil) {
+        this.loginSuccessHandler = loginSuccessHandler;
+        this.socialSuccessHandler = socialSuccessHandler;
+        this.jwtUtil = jwtUtil;
+    }
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
+        return  authenticationConfiguration.getAuthenticationManager();
+    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(List.of("http://13.124.248.186/:80"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+    @Bean
+    public SecurityFilterChain filterChain (HttpSecurity http, AuthenticationManager authenticationManager) {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.POST,  "/api/v2/user/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,  "/api/v2/mail/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,  "/api/v2/jwt/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,  "/healthcheck/**").permitAll()
+                        .anyRequest().authenticated()
+                );
+        http
+                .csrf(AbstractHttpConfigurer::disable);
+        http
+                .cors(cors->cors.configurationSource(corsConfigurationSource()));
+        http
+                .formLogin(AbstractHttpConfigurer::disable);
+        http
+                .httpBasic(AbstractHttpConfigurer::disable);
+        http
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(socialSuccessHandler));
+
+        http
+                .addFilterAt(new LoginFilter(authenticationManager,loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
+
+        http
+                .addFilterBefore(new JWTFilter(jwtUtil),LoginFilter.class);
+        http
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
+    }
+}
