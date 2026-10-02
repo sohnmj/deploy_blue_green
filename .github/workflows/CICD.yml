@@ -86,7 +86,7 @@ jobs:
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             for i in $(seq 1 10); do
-              if curl -sf http://localhost:${{ env.TARGET_PORT }}/health/env; then
+              if curl -sf http://localhost:${{ env.TARGET_PORT }}/healthcheck/env; then
                 echo " -> OK"
                 exit 0
               fi
