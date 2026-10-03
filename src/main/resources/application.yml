@@ -6,7 +6,7 @@ spring:
       blue: blue, common,secret
       green: green,common,secret
 server:
-  env: blue
+  env: local
 
 ---
 spring:
