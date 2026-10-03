@@ -25,7 +25,7 @@ spring:
 server:
   port: 8080
   serviceAddress: 34.55.53.88
-  serverName: local_server
+  serverName: blue
 ---
 spring:
   config:
@@ -34,7 +34,7 @@ spring:
 server:
   port: 8081
   serviceAddress: 34.55.53.88
-  serverName: local_server
+  serverName: green
 ---
 spring:
   config:
