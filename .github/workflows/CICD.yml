@@ -50,7 +50,7 @@ jobs:
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "http://${{ secrets.EC2_HOST }}/healthcheck/env" || true)
           echo "status: $STATUS"
           if [ "$STATUS" = "200" ]; then
-            CURRENT_UPSTREAM=$(curl -s "http://${{ secrets.EC2_HOST }}/env")
+            CURRENT_UPSTREAM=$(curl -s "http://${{ secrets.EC2_HOST }}/healthcheck/env")
           else
             CURRENT_UPSTREAM=green
           fi
