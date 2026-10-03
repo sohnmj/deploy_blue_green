@@ -19,12 +19,15 @@ public class HealthCheckerController {
     private String serverPort;
     @Value("${server.serverName}")
     private String serverName;
+    @Value("${server.serviceAddress}")
+    private String address;
     @GetMapping("/hc")
+
     public ResponseEntity<?>healthcheck(){
         Map<String,String> responseData=new HashMap<>();
         responseData.put("serverName",serverName);
         responseData.put("serverPort",serverPort);
-
+        responseData.put("address",address);
         return ResponseEntity.ok(responseData);
     }
 
