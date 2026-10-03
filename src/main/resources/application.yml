@@ -26,6 +26,7 @@ server:
   port: 8080
   serviceAddress: 34.55.53.88
   serverName: blue
+  env: blue
 ---
 spring:
   config:
@@ -35,6 +36,7 @@ server:
   port: 8081
   serviceAddress: 34.55.53.88
   serverName: green
+  env: green
 ---
 spring:
   config:
