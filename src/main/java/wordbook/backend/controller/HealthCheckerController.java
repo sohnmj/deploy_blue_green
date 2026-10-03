@@ -12,7 +12,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/healthcheck")
 public class HealthCheckerController {
-    @Value("${server.env")
+    @Value("${server.env}")
     private String env;
 
     @Value("${server.port}")
