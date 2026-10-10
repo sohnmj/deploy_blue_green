@@ -38,6 +38,8 @@ server:
   serverName: green
   env: green
 ---
+server:
+  forward-headers-strategy: framework
 spring:
   config:
     activate:
