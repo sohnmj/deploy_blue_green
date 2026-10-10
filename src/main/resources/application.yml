@@ -40,6 +40,9 @@ server:
 ---
 server:
   forward-headers-strategy: framework
+logging:
+  level:
+    org.springframework.security: DEBUG
 spring:
   config:
     activate:
